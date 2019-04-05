@@ -3,8 +3,7 @@ from Visualization import *
 
 class FilterVis(Visualization):
     """
-
-
+    Computes some filters of the layer selected by the user.
     """
 
     def __init__(self, datas : Datas):
@@ -33,41 +32,38 @@ class FilterVis(Visualization):
 
 
     def run(self):
+        """
+        Run the visualization. Computes some filters of the layer selected by the user.
+        """
         activation_model = Model(inputs=self.datas.model.input,
                     outputs=[self.datas.model.layers[self.datas.layer_id].output])
         with self.datas.graph.as_default():
-            start = time.clock()
-            activations = activation_model.predict(self.datas.img)
-            end = time.clock()
-            print(end - start)
-            return self.save_images(activations)
+            activation = activation_model.predict(self.datas.img)
+            return self.save_images(activation)
 
     def _save_single_image(self, activation_index, img_names, activation):
+        """
+        Save one particular image related to one particular filter of the current layer
+        """
         res_name = self.get_basic_name(activation_index)
         img_names[res_name] = res_name + ".png"
         Image.fromarray(activation[0, :, :, activation_index]).convert('L').save(Datas.get_res_path() + res_name + ".png")
         
 
     def save_images(self, activation):
-        activation_index=0
+        """
+        Save all image using parallelism to save each image
+        #Arguments:
+        activation : a model which input is the input of the current model and outpout is the output of the current layer
+        #Return:
+        A dictionnary `res' which values match images generated for each filters
+        For each key x :
+        res[x] = x + ".png"
+        """
         img_names = {}
         fig = plt.figure(frameon=False)
         ax = plt.Axes(fig, [0., 0., 1., 1.])
         ax.set_axis_off()
         fig.add_axes(ax)
-        if False:
-            start = time.clock()
-            Parallel(n_jobs=8, backend="threading")(delayed(self._save_single_image)(row, img_names, activation) for row in range(10))
-            end = time.clock()
-            print(end - start)
-        if True:
-            start = time.clock()
-            for row in range(0,10):
-                #ax.imshow(activation[0, :, :, activation_index], cmap='gray')
-                res_name = self.get_basic_name(row)
-                img_names[res_name] = res_name + ".png"
-                Image.fromarray(activation[0, :, :, activation_index]).convert('L').save(Datas.get_res_path() + res_name + ".png")
-                activation_index += 1
-            end = time.clock()
-            print(end - start)
+        Parallel(n_jobs=24, backend="threading")(delayed(self._save_single_image)(row, img_names, activation) for row in range(10))
         return img_names

@@ -240,7 +240,7 @@ input:checked + .slider:before {
 
 .filter {
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 #filtreBox

@@ -3,12 +3,12 @@ const path = "/static/mysite/resized/";
 const path_img = "/static/mysite/Images/"
 const res_path_img = "/static/mysite/Result/"
 
-//filtreElts.style.visibility = 'hidden';
 
 var onFiltreElt = true; //permet de gérer l'affichage liste des filtres/images
 var fileUploaded = false; //pas de reseau chargé par defaut
 var validerFile = false;
 let NNChosen = false;
+let NNLoaded = false;
 let ClChosen = false;
 let ImgChose = false;
 var layerSelected = false; //true dès qu'on clique sur une couche
@@ -74,12 +74,6 @@ function uploadfile() {
   reqFile.open('GET', 'get_file/', false);
   reqFile.responseType = 'JSON'
   reqFile.send();
-  //console.log(reqFile);
-
-  /* Si un réseau est déjà chargé */
-  if (NNChosen === true) {
-    return;
-  }
 
   /*On récupère la liste et demande au client de choisir*/
 
@@ -114,8 +108,15 @@ function resetHeatMap() {
 }
 
 function resetNet() {
-  if (NNChosen === true) {
-    NNChosen = false;
+  let menuNet = document.getElementById("menu-net");
+  removeChildren(menuNet);
+  menuNet.className = "dropdown-menu";
+  document.getElementById("btnGroupDrop1").textContent = "Choisir un réseau"
+  NNChosen = false;
+  path_file = "";
+
+  if (NNLoaded === true) {
+    NNLoaded = NNChosen = false;
     removeChildren(document.getElementById("divNN"));
 
     const reqNNReset = new XMLHttpRequest();
@@ -125,9 +126,13 @@ function resetNet() {
 
     let classes = document.getElementById("classToolBar");
     let cells = document.getElementById("filecell");
-    cells.removeChild(classes);
+
+    if (classes != null)
+      cells.removeChild(classes);
     if (ClChosen) {
-      cells.removeChild(document.getElementById('validerImg'));
+      let validImg = document.getElementById('validerImg');
+      if (validImg != null)
+        cells.removeChild(validImg);
       if (ImgChose) {
         //cells.removeChild(document.getElementById("imgSelectedName"));
         cells.removeChild(document.getElementById("img-selected"));
@@ -164,7 +169,7 @@ function insertImg(tmp){
 function okImg() {
   if ((imgSelected != "") && (ImgChose === true))
   {
-    //ImgChosen = false;
+    //ImgChose = false;
     document.querySelector('.class_mini').remove();
     const reqImgChosen = new XMLHttpRequest();
     reqImgChosen.open('POST', 'img_selected/', false);
@@ -186,30 +191,36 @@ function okImg() {
 }
 
 function resetClass() {
-  console.log('miboundhbqzdj')
+  let menuClass = document.getElementById('menu-class');
+  if (menuClass != null) {
+    removeChildren(menuClass);
+    menuClass.className = "dropdown-menu";
+    document.getElementById("classBtn").textContent = "Choisir la classe";
+  }
+
   if ((classSelected != "") && (ClChosen === true))
   {
     classChosen = false;
     ClSelected = "";
     imgSelected = "";
-    ImgChosen = false;
+    ImgChose = false;
     ClChosen = false;
     if ((document.querySelector('#listeImg')) != null)
       document.querySelector('#filecell').removeChild(document.querySelector('#listeImg'));
 
 
     if ((document.querySelector('#imgSelectedMini')) != null)
-     document.querySelector('#filecell').removeChild(document.querySelector('#imgSelectedMini'));
+      document.querySelector('#filecell').removeChild(document.querySelector('#imgSelectedMini'));
 
-   if ((document.querySelector('#img-selected')) != null)
-     document.querySelector('#filecell').removeChild(document.querySelector('#img-selected'));
+    if ((document.querySelector('#img-selected')) != null)
+      document.querySelector('#filecell').removeChild(document.querySelector('#img-selected'));
 
+    if (document.querySelector('#validerImg') != null)
+      document.querySelector('#filecell').removeChild(document.querySelector('#validerImg'));
 
-   document.querySelector('#filecell').removeChild(document.querySelector('#validerImg'));
+    document.getElementById('validerClass').disabled=false;
 
-   document.getElementById('validerClass').disabled=false;
-
-   console.log('class unselected');
+    console.log('class unselected');
  }
 }
 
@@ -302,6 +313,7 @@ function createRemove() {
 function okFile() {
   if ((path != "") && (NNChosen === true))
   {
+    NNLoaded = true;
     //NNChosen = false;
     const req = new XMLHttpRequest();
     req.open('POST', 'valider/', false);
@@ -311,9 +323,6 @@ function okFile() {
 
     console.log(req.responseText)
 
-    /*let NNElt = document.createElement("div");
-    NNElt.id = "NNElt";
-    NNElt.classList.add('neural-network');*/
     divNNElt.classList.add('neural-network');
     validerFile = true;
 
@@ -387,10 +396,6 @@ function okFile() {
 
 document.querySelector("#validerFile").addEventListener('click', okFile);
 
-//document.querySelector("#btnSwitchFiltre").addEventListener('change', switchBtn);
-
-
-
 function zoom()
 //permet d'effectuer un zoom sur l'instance qui appelle la fonction
 {
@@ -433,13 +438,20 @@ function computeFiltre_aux(filters)
   let tableFilters = document.getElementById("tableFilters");
   let filtersList = objToArray(filters);
   let nbLignes = filtersList.length / 3;
-  for(let i = 0; i < nbLignes - 1; i++) {
+  console.log(filtersList)
+  let end = nbLignes - 1
+  for(let i = 0; i < end; i++) {
     let line = createLineImgs(res_path_img, filtersList, i, 3, 3);
     tableFilters.appendChild(line);
   }
-  /* Add potential last images */
-  let line = createLineImgs(res_path_img, filtersList, nbLignes - 1, 3, filtersList.length % 3);
-  tableFilters.appendChild(line);
+  if ((filtersList.length % 3) != 0) {
+    /* Add potential last images */
+    let line = createLineImgs(res_path_img, filtersList, nbLignes - 1, 3, filtersList.length % 3);
+    tableFilters.appendChild(line);
+  } else {
+    let line = createLineImgs(res_path_img, filtersList, nbLignes - 1, 3, 3);
+    tableFilters.appendChild(line);
+  }
 }
 
 function computePic(path)
@@ -462,47 +474,6 @@ function dezoom_big()
   this.classList.add('dezoom-img');
 }
 
-
-function switchBtn()
-{
-  var box = document.getElementById('filtreBox');
-
-  if (layerSelected === true)
-  {
-
-    if (onFiltreElt === true)
-    {
-      if (box.children.length > 0)
-        box.removeChild(box.children[1]);
-      let img = computePic(path + "test.jpg");
-      /*img.addEventListener('mouseover', zoom_big);
-      img.addEventListener('mouseout', dezoom_big);*/
-      img.style = "zoom";
-      box.style.overflow = 'visible';
-      box.appendChild(img);
-      onFiltreElt = false;
-    }
-    else
-    {
-      box.removeChild(box.children[1]);
-      box.style.overflow = 'auto';
-      computeFiltre_aux();
-      onFiltreElt = true;
-    }
-  }
-  else
-  {
-    //box.children[1].textContent =''; //si aucune couche n'est selectionnée, laisser l'espace vide
-  }
-  /*let label = document.createElement('p');
-  label.id = 'nomBtnFiltre';
-  label.textContent = 'Filtres/Image';
-  document.getElementById('filtreBox').appendChild(label);//document.getElementById('nomBtnFiltre').textContent = 'Filtres/Image';
-  */
-}
-
-
-
 function newRectangle(id)
 {
   var rectangle = document.createElement('p');
@@ -511,16 +482,6 @@ function newRectangle(id)
   }) //passer en argument les filtres de la couche en question
   return rectangle;
 }
-
-
-/*document.getElementById('closeFiltre').style.visibility = 'hidden';
-document.getElementById('closeFiltre').addEventListener('click', function() {
-  this.style.visibility = 'hidden';
-  document.getElementById('filtreBox').children[1].remove();
-  document.querySelector("#NNElt").remove();
-  layerSelected = false;
-  validerFile = false;
-})*/
 
 /* Architecture of the network */
 const classAssoc = {
@@ -556,24 +517,38 @@ function computeFiltre(layer_id)
     heatMapBox.removeChild(heatMapBox.firstChild);
   }
   if (!ImgChose) {
+    let e = document.getElementById('tableFilters');
     alert("Aucune image n\'a été sélectionné, lancement de filter_max sur la couche" + layer_id);
-    document.querySelector('#loader').style.visibility = "visible";
+    
+    if(e.children.length > 1)
+    {
+      let tmp = e.children[0];
+      while (e.firstChild) {
+        e.removeChild(e.firstChild);
+      }
+      e.appendChild(tmp);
+    }
+
+    let loader = document.createElement("div");
+    loader.classList.add("loader");
+    e.appendChild(loader);
+
     let req = new XMLHttpRequest();
     req.open('POST', 'filter_max/', false);
     req.responseType = 'JSON'
     req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     console.log("layer="+layer_id);
     req.send("layer="+layer_id);
+    e.removeChild(loader);
+
     if (req.status === 200)
     {
       listeFiltres = JSON.parse(req.responseText)
-      console.log(listeFiltres);
       computeFiltre_aux(listeFiltres.filters);
-      displayHeatMap(listeFiltres.heatMap);
+      //displayHeatMap(listeFiltres.heatMap);
 
       console.log('done')
       layerSelected = true;
-      document.querySelector('#loader').style.visibility = "hidden";
     }
     return;
   }
@@ -588,10 +563,6 @@ function computeFiltre(layer_id)
   }
   /* Create a request
   to compute result filters*/
-
-  //document.querySelector('#test').textContent = "loading, please wait ...";
-
-  //document.querySelector('#loader').style.visibility = "visible";
 
   let loader = document.createElement("div");
   loader.classList.add("loader");

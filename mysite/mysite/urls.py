@@ -29,5 +29,5 @@ urlpatterns = [
     path('img_selected/', views.img_selected),
     path('get_filters/', views.get_filters),
     path('reset_nn/', views.reset_nn),
-    path('filter_max', views.filter_max),
+    path('filter_max/', views.filter_max),
 ]

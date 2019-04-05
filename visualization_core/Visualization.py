@@ -15,7 +15,20 @@ class Visualization(object):
 
     def __init__(self, datas : Datas):
         self.datas = datas
-        
+
+    @staticmethod  
+    def clear_dir_ext(dir_path, lext=[".png"]):
+        if not os.path.exists(dir_path):
+            print("Le repertoire {} est introuvable.".format(dir_path))
+            return
+        elif not os.path.isdir(dir_path):
+            print("{} n'est pas un repertoire.".format(dir_path))
+            return
+        for f in os.listdir(dir_path):
+            _, fext = os.path.splitext(f)
+            if fext in lext:
+                os.unlink(dir_path + f)
+
     #utility function to normalize a tensor.
     def normalize(self, x):
         """

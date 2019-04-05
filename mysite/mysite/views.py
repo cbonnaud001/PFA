@@ -95,12 +95,14 @@ def filter_max(request):
   layer_id = int(request.POST["layer"])
   res = {}
   # Filters
-  visu = FilterMax(datas)
+  datas.set_layer(layer_id)
+  visu = FilterMax(datas, plot_firstn=1, n=10)
   res["filters"] = visu.run()
   # HeatMap
-  visu = HeatMap(datas)
-  res["heatMap"] = visu.run()
-  return HttpResponse(json.dumps(res,ensure_ascii=False))
+  """visu = HeatMap(datas)
+  res["heatMap"] = visu.run()"""
+  resjson = json.dumps(res,ensure_ascii=False)
+  return HttpResponse(resjson)
 
 @csrf_exempt
 def get_filters(request):
@@ -108,39 +110,18 @@ def get_filters(request):
   datas.set_layer(layer_id)
   res = {}
   # Filters
+  start = time.clock()
   visu = FilterVis(datas)
   res["filters"] = visu.run()
+  end = time.clock()
+  print("compute filters in ", end - start, "clocks")
   # HeatMap
   visu = HeatMap(datas)
+  start = time.clock()
   res["heatMap"] = visu.run()
+  end = time.clock()
+  print("compute heat map in ", end - start, "clocks")
   return HttpResponse(json.dumps(res,ensure_ascii=False))
-
-# @csrf_exempt
-# def img_selected(request):
-#     img_selected = request.POST.__getitem__('img')
-
-#     vis1.load_image(img_selected)
-#     print(vis1.img)
-
-
-#     print('image choisie : ' + img_selected)
-
-#     file_location = './Images/' + request.POST.__getitem__('cl') + '/' + request.POST.__getitem__('img')
-
-#     try:
-#         with open(file_location, 'r') as f:
-#            file_data = f.read()
-
-#         # sending response
-#         response = HttpResponse(file_data, content_type='image/jpeg')
-#         char = 'attachment; filename=' + img_selected
-#         response['Content-Disposition'] = char
-
-#     except IOError:
-#         # handle file not exist case here
-#         response = HttpResponseNotFound('<h1>File not exist</h1>')
-
-#     return response
 
 @csrf_exempt
 def img_selected(request):
@@ -150,7 +131,6 @@ def img_selected(request):
 
     print('image choisie : ' + img_selected)
 
-    #file_location = request.POST.__getitem__('cl') + '/' + request.POST.__getitem__('img')
     file_location = '/' + request.POST.__getitem__('img')
     res = {'img': file_location}
     return HttpResponse(json.dumps(res, ensure_ascii=False))
@@ -161,7 +141,6 @@ def test_get(request):
     print("oui")
     now = datetime.datetime.now()
     html = "<html><body>It is now %s.</body></html>" % now
-    #return json.dumps({'responseText': "coucou"})
     return HttpResponse("0")
 
 @csrf_exempt
@@ -177,14 +156,3 @@ def testpost(request):
 def js(obj):
     return mark_safe(json.dumps(obj))
 
-'''def test_i18n(request):
-    nb_chats = 2
-    couleur = "blanc"
-    chaine = _("J'ai un %(animal)s %(col)s.") % {'animal': 'chat', 'col': couleur}
-    infos = ungettext(
-        "… et selon mes informations, vous avez %(nb)s chat %(col)s !",
-        "… et selon mes informations, vous avez %(nb)s chats %(col)ss !",
-        nb_chats) % {'nb': nb_chats, 'col': couleur}
-
-    return render(request, 'test_i18n.html', locals())
-    '''

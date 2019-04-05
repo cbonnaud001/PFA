@@ -46,11 +46,25 @@ class HeatMap(Visualization):
             if file_ext == ".png":
                 os.unlink(DIR + f)
 
+    def _save_single_image(self, acts, layer_name, scaler, plot_dir, i):
+        img = acts[0, :, :, i]
+        # scale the activations (which will form our heat map) to be in range 0-1
+        img = scaler.transform(img)
+        # resize heatmap to be same dimensions of image
+        img = Image.fromarray(img)
+        #img = img.resize((image.shape[0], image.shape[1]), Image.BILINEAR)
+        img = np.array(img)
+        plt.imshow(img)
+        # overlay a 70% transparent heat map onto the image
+        # Lowest activations are dark, highest are dark red, mid are yellow
+        plt.imshow(img, alpha=0.3, cmap='jet', interpolation='bilinear')
+        plt.savefig(plot_dir + layer_name.split('/')[0] + '_'  + str(i) + '.png', bbox_inches='tight')
+
     # heatmap core function
     def __display_heatmaps(self, activations, o_name):
         plot_dir = Datas.get_static_path() + "heat_plots/"
 
-        self.clear_png_dir(plot_dir)
+        Visualization.clear_dir_ext(plot_dir)
         for layer_name, acts in activations.items():
             if acts.shape[0] != 1:
                 print('-> Skipped. First dimension is not 1.')
@@ -64,6 +78,9 @@ class HeatMap(Visualization):
         layer_name = self.datas.get_layer_name()
         scaler = MinMaxScaler()
         scaler.fit(acts.reshape(-1, 1))
+
+        Parallel(n_jobs=24, backend="threading")(delayed(self._save_single_image)(acts, layer_name, scaler, plot_dir, i) for i in range(len(activations)))
+        """
         for i  in range(len(activations)):
             img = acts[0, :, :, i]
             # scale the activations (which will form our heat map) to be in range 0-1
@@ -77,7 +94,7 @@ class HeatMap(Visualization):
             # Lowest activations are dark, highest are dark red, mid are yellow
             plt.imshow(img, alpha=0.3, cmap='jet', interpolation='bilinear')
             plt.savefig(plot_dir + layer_name.split('/')[0] + '_'  + str(i) + '.png', bbox_inches='tight')
-
+        """
         return self.__overlap(plot_dir, layer_name.split('/')[0], o_name)
 
 
