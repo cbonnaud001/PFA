@@ -11,6 +11,16 @@ class HeatMap(Visualization):
 
     # Utility function that overlaps all images in DIR
     def __overlap(self, DIR, layer_name):
+        """
+        Utility function that overlaps all images in DIR
+        #Arguments:
+        DIR : Directory where to find images used for the overlaping
+        layer_name : the layer's name selected by the user
+        #Result:
+        A dictionnary with one key one value
+        the value is the name of the heatmap image stored in result directory
+        the key is that image name without the '.png' extension
+        """
 
         files = [f for f in listdir(DIR) if isfile(join(DIR, f))]
         old = Image.open(DIR + files[0])
@@ -37,13 +47,18 @@ class HeatMap(Visualization):
         result.show()
         return res
 
-    def clear_png_dir(self, DIR):
-        for f in os.listdir(DIR):
-            filename, file_ext = os.path.splitext(f)
-            if file_ext == ".png":
-                os.unlink(DIR + f)
-
     def _save_single_image(self, acts, layer_name, scaler, plot_dir, i):
+        """
+        Save one specific image. This routine is useful for parallel
+        algorithm storing images
+        #Arguments:
+        acts: A 4-entry array result of self.datas.model.predict (keras.Model.predict)
+        to access to the i-ème image : acts[0, :, :, i]
+        layer_name :  the name of the layer selected by the user
+        scaler : object that will scale all pixel of the image to be in range of 0-1
+        plot_dir : the directory where to plot images
+        i : the index of the image to save
+        """
         img = acts[0, :, :, i]
         # scale the activations (which will form our heat map) to be in range 0-1
         img = scaler.transform(img)
@@ -59,6 +74,16 @@ class HeatMap(Visualization):
 
     # heatmap core function
     def __display_heatmaps(self, activations):
+        """
+        plot all images relative to the filters of one layer
+        and then make an interpolation with these images
+        #Aguments:
+        activations : array containing the outputs of the layer selected by the user
+        #Return:
+        A dictionnary with one key one value
+        the value is the name of the heatmap image stored in result directory
+        the key is that image name without the '.png' extension
+        """
         plot_dir = Datas.get_static_path() + "heat_plots/"
 
         # Clear all '.png's in the plot directory
@@ -76,6 +101,13 @@ class HeatMap(Visualization):
 
     # The main method that runs the visualization
     def run(self):
+        """
+        Run the visualization and return the computed heatmap's filename
+        #Return:
+        A dictionnary with one key one value
+        the value is the name of the heatmap image stored in result directory
+        the key is that image name without the '.png' extension
+        """
         model = self.datas.model
         image = self.datas.img
         layer_name = self.datas.get_layer_name()
