@@ -37,7 +37,6 @@ def parse(tab):
   res = {}
   for i in range(0,n):
     res[i] = tab[i]
-  print (n, res)
   return json.dumps(res,ensure_ascii=False)
 
 

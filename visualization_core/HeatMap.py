@@ -10,10 +10,7 @@ class HeatMap(Visualization):
         self.visu_name = "HeatMap"
 
     # Utility function that overlaps all images in DIR
-    def __overlap(self, DIR, layer_name, o_name):
-        """output_name = Datas.get_res_path() + o_name
-        origin_image = Image.open(output_name)
-        origin_image = origin_image.convert("RGBA")"""
+    def __overlap(self, DIR, layer_name):
 
         files = [f for f in listdir(DIR) if isfile(join(DIR, f))]
         old = Image.open(DIR + files[0])
@@ -61,41 +58,19 @@ class HeatMap(Visualization):
         plt.savefig(plot_dir + layer_name.split('/')[0] + '_'  + str(i) + '.png', bbox_inches='tight')
 
     # heatmap core function
-    def __display_heatmaps(self, activations, o_name):
+    def __display_heatmaps(self, activations):
         plot_dir = Datas.get_static_path() + "heat_plots/"
 
+        # Clear all '.png's in the plot directory
         Visualization.clear_dir_ext(plot_dir)
         for layer_name, acts in activations.items():
-            if acts.shape[0] != 1:
-                print('-> Skipped. First dimension is not 1.')
-                continue
-            if len(acts.shape) <= 2:
-                print('-> Skipped. 2D Activations.')
-                continue
-            print('')
-
-        img = self.datas.img
-        layer_name = self.datas.get_layer_name()
-        scaler = MinMaxScaler()
-        scaler.fit(acts.reshape(-1, 1))
+            layer_name = self.datas.get_layer_name()
+            scaler = MinMaxScaler()
+            scaler.fit(acts.reshape(-1, 1))
 
         Parallel(n_jobs=24, backend="threading")(delayed(self._save_single_image)(acts, layer_name, scaler, plot_dir, i) for i in range(len(activations)))
-        """
-        for i  in range(len(activations)):
-            img = acts[0, :, :, i]
-            # scale the activations (which will form our heat map) to be in range 0-1
-            img = scaler.transform(img)
-            # resize heatmap to be same dimensions of image
-            img = Image.fromarray(img)
-            #img = img.resize((image.shape[0], image.shape[1]), Image.BILINEAR)
-            img = np.array(img)
-            plt.imshow(img)
-            # overlay a 70% transparent heat map onto the image
-            # Lowest activations are dark, highest are dark red, mid are yellow
-            plt.imshow(img, alpha=0.3, cmap='jet', interpolation='bilinear')
-            plt.savefig(plot_dir + layer_name.split('/')[0] + '_'  + str(i) + '.png', bbox_inches='tight')
-        """
-        return self.__overlap(plot_dir, layer_name.split('/')[0], o_name)
+
+        return self.__overlap(plot_dir, layer_name.split('/')[0])
 
 
 
@@ -106,5 +81,5 @@ class HeatMap(Visualization):
         layer_name = self.datas.get_layer_name()
         activations = self.get_activations(model, image, l_name = layer_name)
 
-        return self.__display_heatmaps(activations, self.datas.img_name)
+        return self.__display_heatmaps(activations)
 

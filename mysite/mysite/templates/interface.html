@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="">
   <meta name="author" content="">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
-  crossorigin="anonymous">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-  <script src="https://unpkg.com/konva@2.4.2/konva.min.js"></script>
   {% load static %}
+  <link rel="stylesheet" href="{% static "/mysite/css/bootstrap.min.css"%}">
+  <link rel="stylesheet" href="{% static "/mysite/css/all.css"%}">
+  <script src="https://unpkg.com/konva@2.4.2/konva.min.js"></script>
   <link rel="stylesheet" href="{% static "/mysite/css/interface.css"%}"/>
 </head>
 
@@ -17,12 +16,9 @@
   <h1>Visualisation de réseaux de neurones profonds</h1>
 </header>
 
-
-
 <body>
   <div class="container">
     <div id="colgauche" class="col-md-3">
-
       <div id="filecell" class="cell">
         <div class="btn-toolbar mb-3" role="toolbar">
             <div id="nets" class="btn-group" role="group">
@@ -32,15 +28,16 @@
               <div id="menu-net" class="dropdown-menu" aria-labelledby="btnGroupDrop1">
               </div>
             </div>
-            <button id="validerFile" class="btn btn-success"  onclick="this.disabled = 'disabled'"><span class="fas fa-check" ></span> Ok</button>
-            <button id="removeNet" class="btn btn-danger" onclick="document.getElementById('validerFile').disabled = false "><span class="fas fa-times">
-
+            <button id="validerFile" class="btn btn-success"  onclick="this.disabled = 'disabled'">
+              <span class="fas fa-check" ></span>
+              Ok
+            </button>
+            <button id="removeNet" class="btn btn-danger" onclick="document.getElementById('validerFile').disabled = false ">
+            <span class="fas fa-times">
             </button>
           </tr>
         </div>
-
       </div>
-
     </div>
     <div id="colCentre" class="col-md-6">
       <div style="overflow-x:auto">
@@ -48,26 +45,23 @@
           <colgroup class="columns"></colgroup>
         </table>
       </div>
-</div>
-<div id="colDroite" class="col-md-3">
-  <div class="cell" id="heatMapBox">
   </div>
-  <div class="cell" id="filtreBox">
-    <table id="tableFilters">
-      <colgroup class="columns"></colgroup>
-    </table>
+  <div id="colDroite" class="col-md-3">
+    <div class="cell" id="heatMapBox">
+    </div>
+    <div class="cell" id="filtreBox">
+      <table id="tableFilters">
+        <colgroup class="columns"></colgroup>
+      </table>
+    </div>
   </div>
 </div>
-</div> <!-- /container -->
-<!-- Bootstrap core JavaScript
-  ================================================== -->
-  <!-- Placed at the end of the document so the pages load faster -->
   {% load static %}
   <script src="{% static "mysite/js/script.js"%}" type="text/javascript"></script>
 
 </body>
 
-<footer id="footer">
-  <p>Projet au Fil de l'Année - 2018/2019  </p>
-</footer>
+  <footer id="footer">
+    <p>Projet au Fil de l'Année - 2018/2019  </p>
+  </footer>
 </html>

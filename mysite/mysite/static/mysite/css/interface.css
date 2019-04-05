@@ -239,7 +239,7 @@ input:checked + .slider:before {
 }
 
 .filter {
-  width: 100%;
+  width: 105px;
   height: auto;
 }
 
